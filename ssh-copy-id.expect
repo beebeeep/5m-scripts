@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f 
+
+
+set host [lrange $argv 0 0]
+set password [lrange $argv 1 1]
+
+set key "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCuo6Cyd3JGafWP6kVXPKFofuN1NAJEXRVj5bOw+I3DvZzvZCgrIX1mKtyO2FYlW3jMljpGZpun7ulCxd3MZVM/UK6bmVhvM4QLLXpV2m7b3ZtB4zI8hpzR9a0nBWSMZCHpPvctgaYD6Mzfb7HYJoYRFFAsrlYNdEH/u+fAPnhpIqQfsF4SsLScZfIGmgcXi/A787k10e0bj+J+G34pwXC1TPVUbs78rdITW6QOAxoss7KGffNKkmxsXJwOeKszubmWwMJypQIrgKeZBf1qXNGLGbkyWDHjiMwxZQQL6UtGsX9tyc575MoEuDsIOqf4PR2DQ3o8SJllnUOEZLR2yIYj miga@migalin-desktop"
+
+spawn ssh $host
+
+expect "Are you sure you want to continue connecting (yes/no)?" {send "yes\r" }
+
+expect {
+	"\]$ $" {
+		send "uname -a\r"
+		send "exit\r"
+	}
+	-ex "Are you sure you want to continue connecting (yes/no)? " {
+		send "yes\r" 
+	}
+	-re ".assword:" {
+		send -- "$password\r"
+		expect -re "\\$"
+		send -- "\[ ! -d ~/.ssh \] && (mkdir ~/.ssh && chmod 700 ~/.ssh)\r"
+		send "echo '$key' >> ~/.ssh/authorized_keys\r"
+		send "chmod 600 ~/.ssh/authorized_keys\r"
+		send "exit\r"
+	}
+}
+expect eof
+
+		
